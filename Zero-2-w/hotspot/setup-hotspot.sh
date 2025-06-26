@@ -90,10 +90,24 @@ if [[ "$enable_nat" =~ ^[Yy]$ ]]; then
   sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
   sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
-  # Restore rules on boot via rc.local
-  if ! grep -q "iptables-restore" /etc/rc.local 2>/dev/null; then
-    sudo sed -i '/^exit 0/i iptables-restore < /etc/iptables.ipv4.nat' /etc/rc.local
-  fi
+  # Create systemd service to restore iptables rules on boot
+  echo "🔧 Creating systemd service for iptables restore..."
+  cat <<EOF | sudo tee /etc/systemd/system/iptables-restore.service
+[Unit]
+Description=Restore iptables rules
+After=network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/iptables-restore /etc/iptables.ipv4.nat
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  sudo systemctl enable iptables-restore.service
 fi
 
 echo "✅ Hotspot setup complete. Rebooting..."
