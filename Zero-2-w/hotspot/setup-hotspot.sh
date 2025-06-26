@@ -42,17 +42,19 @@ if [ -f /etc/hostapd/hostapd.conf ]; then
     echo ""
 fi
 
+# Force interactive input by redirecting from /dev/tty
+exec < /dev/tty
+
 # 🧠 Prompt for user input
-# Check if values are already set via environment variables
 if [ -z "$HOTSPOT_SSID" ]; then
-    read -p "📶 Enter Wi-Fi SSID (new network name): " ssid < /dev/tty
+    read -p "📶 Enter Wi-Fi SSID (new network name): " ssid
 else
     ssid="$HOTSPOT_SSID"
     echo "📶 Using SSID: $ssid"
 fi
 
 if [ -z "$HOTSPOT_PASSWORD" ]; then
-    read -s -p "🔑 Enter Wi-Fi password (min 8 characters): " wifi_password < /dev/tty
+    read -s -p "🔑 Enter Wi-Fi password (min 8 characters): " wifi_password
     echo
 else
     wifi_password="$HOTSPOT_PASSWORD"
@@ -60,7 +62,7 @@ else
 fi
 
 if [ -z "$HOTSPOT_IP" ]; then
-    read -p "🌐 Enter static IP for Pi's Wi-Fi (default: 192.168.4.1): " static_ip < /dev/tty
+    read -p "🌐 Enter static IP for Pi's Wi-Fi (default: 192.168.4.1): " static_ip
     static_ip=${static_ip:-192.168.4.1}
 else
     static_ip="$HOTSPOT_IP"
@@ -68,7 +70,7 @@ else
 fi
 
 if [ -z "$DHCP_START" ]; then
-    read -p "📦 Enter DHCP range start (default: 192.168.4.2): " dhcp_start < /dev/tty
+    read -p "📦 Enter DHCP range start (default: 192.168.4.2): " dhcp_start
     dhcp_start=${dhcp_start:-192.168.4.2}
 else
     dhcp_start="$DHCP_START"
@@ -76,7 +78,7 @@ else
 fi
 
 if [ -z "$DHCP_END" ]; then
-    read -p "📦 Enter DHCP range end (default: 192.168.4.20): " dhcp_end < /dev/tty
+    read -p "📦 Enter DHCP range end (default: 192.168.4.20): " dhcp_end
     dhcp_end=${dhcp_end:-192.168.4.20}
 else
     dhcp_end="$DHCP_END"
@@ -84,15 +86,15 @@ else
 fi
 
 if [ -z "$ENABLE_NAT" ]; then
-    read -p "� Enable internet sharing from eth0 to Wi-Fi clients? (y/N): " enable_nat < /dev/tty
+    read -p "🔁 Enable internet sharing from eth0 to Wi-Fi clients? (y/N): " enable_nat
 else
     enable_nat="$ENABLE_NAT"
     echo "🔁 Internet sharing: $enable_nat"
 fi
 
 echo "⏸️  Stopping services..."
-sudo systemctl stop hostapd
-sudo systemctl stop dnsmasq
+sudo systemctl stop hostapd 2>/dev/null || true
+sudo systemctl stop dnsmasq 2>/dev/null || true
 
 # 💾 Backup existing configurations
 echo "💾 Backing up existing configurations..."
