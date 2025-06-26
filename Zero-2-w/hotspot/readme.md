@@ -1,129 +1,115 @@
-# 📡 Pi Hotspot Setup
+# Pi Hotspot Setup
 
-Transform your Raspberry Pi Zero 2 W (or other Pi with Wi-Fi) into a mobile Wi-Fi hotspot!
+This script turns your Raspberry Pi Zero 2 W (or other Pi with Wi-Fi) into a mobile Wi-Fi hotspot.  
+You can use it to:
 
-**Perfect for:**
-- Creating a portable Wi-Fi network anywhere
-- Broadcasting a custom Wi-Fi network with your own SSID and password
-- Automatically assigning IP addresses to connected devices via DHCP
-- Optionally sharing internet from Ethernet (`eth0`) to connected Wi-Fi clients
-
----
-
-## ✨ Features
-
-- **Interactive setup** - Choose your SSID, password, IP range, and more
-- **Complete configuration** - Automatically configures `hostapd`, `dnsmasq`, and `dhcpcd`
-- **Internet sharing** - Support for NAT (share internet from Ethernet to Wi-Fi)
-- **Auto-start** - Services automatically enable on boot
-- **Easy management** - Simple commands to start, stop, and reconfigure
+- Broadcast a custom Wi-Fi network (SSID + password)
+- Automatically assign IP addresses via DHCP
+- Optionally share internet from Ethernet (`eth0`) to connected Wi-Fi clients
 
 ---
 
-## 📋 Requirements
+## 🔧 Features
 
-- **OS:** Raspberry Pi OS (Lite or Full)
-- **Hardware:** Raspberry Pi with built-in Wi-Fi (Pi Zero 2 W, Pi 3, Pi 4, etc.)
-- **Network:** Internet access during setup (to install packages)
-
----
-
-## 🚀 Quick Start
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/nobleskye/PI-Scripts.git
-   cd PI-Scripts/Zero-2-w/hotspot
-   ```
-
-2. **Run the setup script:**
-   ```bash
-   sudo bash setup-hotspot.sh
-   ```
-
-3. **Follow the interactive prompts to configure:**
-   - Wi-Fi name (SSID)
-   - Wi-Fi password
-   - Static IP address for Pi's `wlan0` interface
-   - DHCP IP range for connected devices
-   - Internet sharing options
-
-4. **Reboot when prompted** - Your Pi will automatically start broadcasting the hotspot after reboot!
+- Interactive setup (you choose SSID, password, IP range, etc.)
+- Configures `hostapd`, `dnsmasq`, and `dhcpcd`
+- Supports NAT (internet sharing from Ethernet)
+- Automatically enables services on boot
 
 ---
 
-## 🌐 Default Network Configuration
+## 📦 Requirements
 
-If you accept the default settings, your Pi will create:
-
-| Setting | Value |
-|---------|-------|
-| **Pi IP Address** | `192.168.4.1` |
-| **DHCP Range** | `192.168.4.2` - `192.168.4.20` |
-| **Services** | `hostapd` and `dnsmasq` |
-| **Internet Sharing** | Optional via `eth0` |
+- Raspberry Pi OS (Lite or Full)
+- Raspberry Pi with built-in Wi-Fi (e.g., Pi Zero 2 W, Pi 3, 4, etc.)
+- Internet access to install packages
 
 ---
 
-## 🔧 Management Commands
+## 🚀 Setup
 
-### Stop the hotspot:
+1. Clone the repo:
+
 ```bash
+git clone https://github.com/nobleskye/PI-Scripts.git
+cd PI-Scripts
+cd Zero-2-w/hotspot
+```
+    Follow the prompts to configure:
+
+    Wi-Fi name (SSID)
+
+    Wi-Fi password
+
+    Static IP (for Pi’s wlan0)
+
+    DHCP range
+
+    Optionally enable internet sharing
+
+    The Pi will reboot when setup is complete.
+
+🌐 Access Point Details (default)
+
+If you accept defaults, your Pi will:
+
+    Host Wi-Fi on 192.168.4.1
+
+    Serve DHCP in 192.168.4.2 – 192.168.4.20
+
+
+    ---
+
+    ## 🌐 Access Point Details (default)
+
+    If you accept defaults, your Pi will:
+
+    - Host Wi-Fi on `192.168.4.1`
+    - Serve DHCP in `192.168.4.2 – 192.168.4.20`
+    - Use `hostapd` and `dnsmasq` to manage connections
+    - (Optionally) share internet from `eth0`
+
+    ---
+
+    ## 🧠 Notes
+
+    - To change the hotspot settings later, rerun the script or manually edit:
+
+        - `/etc/dhcpcd.conf`
+        - `/etc/dnsmasq.conf`
+        - `/etc/hostapd/hostapd.conf`
+
+    - To stop the hotspot:
+
+        ```bash
+        sudo systemctl stop hostapd dnsmasq
+        ```
+
+    ---
+
+    ## ✅ Tested on:
+
+    - Raspberry Pi Zero 2 W
+    - Raspberry Pi OS Lite (32-bit)
+
+
+    (Optionally) share internet from eth0
+
+🧠 Notes
+
+    To change the hotspot settings later, rerun the script or manually edit:
+
+        /etc/dhcpcd.conf
+
+        /etc/dnsmasq.conf
+
+        /etc/hostapd/hostapd.conf
+
+    To stop the hotspot:
+
 sudo systemctl stop hostapd dnsmasq
-```
 
-### Start the hotspot:
-```bash
-sudo systemctl start hostapd dnsmasq
-```
+✅ Tested on:
 
-### Check status:
-```bash
-sudo systemctl status hostapd dnsmasq
-```
-
----
-
-## ⚙️ Manual Configuration
-
-To modify hotspot settings after setup, edit these configuration files:
-
-- **DHCP settings:** `/etc/dhcpcd.conf`
-- **DNS/DHCP server:** `/etc/dnsmasq.conf`  
-- **Access point:** `/etc/hostapd/hostapd.conf`
-
-Or simply rerun the setup script to reconfigure interactively.
-
----
-
-## ✅ Tested Platforms
-
-- **Raspberry Pi Zero 2 W** ✓
-- **Raspberry Pi OS Lite (32-bit)** ✓
-- **Raspberry Pi 3/4** (should work)
-
----
-
-## 🆘 Troubleshooting
-
-If you encounter issues:
-
-1. **Check service status:**
-   ```bash
-   sudo systemctl status hostapd dnsmasq
-   ```
-
-2. **View logs:**
-   ```bash
-   sudo journalctl -u hostapd -f
-   sudo journalctl -u dnsmasq -f
-   ```
-
-3. **Restart services:**
-   ```bash
-   sudo systemctl restart hostapd dnsmasq
-   ```
-
----
-
-*Made with ❤️ for the Raspberry Pi community*
+* Raspberry Pi Zero 2 W
+* Raspberry Pi OS Lite (32-bit)
