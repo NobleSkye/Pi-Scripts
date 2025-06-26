@@ -6,8 +6,8 @@ echo "🛠️  Updating and installing required packages..."
 sudo apt update
 sudo apt install -y hostapd dnsmasq dhcpcd5 iptables
 
-# Prompt for user input
-read -p "📶 Enter Wi-Fi SSID (network name): " ssid
+# 🧠 Prompt for user input
+read -p "📶 Enter Wi-Fi SSID (new network name): " ssid
 read -s -p "🔑 Enter Wi-Fi password (min 8 characters): " wifi_password
 echo
 read -p "🌐 Enter static IP for Pi's Wi-Fi (default: 192.168.4.1): " static_ip
@@ -25,11 +25,18 @@ echo "⏸️  Stopping services..."
 sudo systemctl stop hostapd
 sudo systemctl stop dnsmasq
 
-echo "📝 Configuring dhcpcd..."
-sudo cp /usr/share/dhcpcd5/dhcpcd.conf /etc/dhcpcd.conf
-
-# Append static IP config
-cat <<EOF | sudo tee -a /etc/dhcpcd.conf
+# 📝 Generate fresh dhcpcd config
+echo "📝 Creating clean /etc/dhcpcd.conf..."
+cat <<EOF | sudo tee /etc/dhcpcd.conf >/dev/null
+hostname
+clientid
+persistent
+option rapid_commit
+option domain_name_servers, domain_name, domain_search, host_name
+option classless_static_routes
+option interface_mtu
+require dhcp_server_identifier
+slaac private
 
 interface wlan0
     static ip_address=${static_ip}/24
@@ -38,13 +45,15 @@ EOF
 
 sudo systemctl restart dhcpcd
 
+# 🌐 DNSMasq config for DHCP
 echo "🌐 Configuring dnsmasq..."
-sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig || true
+sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig 2>/dev/null || true
 cat <<EOF | sudo tee /etc/dnsmasq.conf
 interface=wlan0
 dhcp-range=${dhcp_start},${dhcp_end},255.255.255.0,24h
 EOF
 
+# 📡 Hostapd config for Access Point
 echo "📡 Configuring hostapd..."
 sudo mkdir -p /etc/hostapd
 cat <<EOF | sudo tee /etc/hostapd/hostapd.conf
@@ -63,21 +72,28 @@ wpa_key_mgmt=WPA-PSK
 rsn_pairwise=CCMP
 EOF
 
+# Point hostapd to the config
 sudo sed -i 's|#DAEMON_CONF=""|DAEMON_CONF="/etc/hostapd/hostapd.conf"|' /etc/default/hostapd
 
+# 📶 Enable services
 echo "📶 Enabling services..."
 sudo systemctl unmask hostapd
 sudo systemctl enable hostapd
 sudo systemctl enable dnsmasq
 
-# Internet sharing setup (optional)
+# 🔁 Optional: NAT internet sharing
 if [[ "$enable_nat" =~ ^[Yy]$ ]]; then
   echo "🌍 Setting up NAT for internet sharing..."
   echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
   sudo sysctl -w net.ipv4.ip_forward=1
+
   sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
   sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
-  sudo sed -i '/^exit 0/i iptables-restore < /etc/iptables.ipv4.nat' /etc/rc.local
+
+  # Restore rules on boot via rc.local
+  if ! grep -q "iptables-restore" /etc/rc.local 2>/dev/null; then
+    sudo sed -i '/^exit 0/i iptables-restore < /etc/iptables.ipv4.nat' /etc/rc.local
+  fi
 fi
 
 echo "✅ Hotspot setup complete. Rebooting..."
