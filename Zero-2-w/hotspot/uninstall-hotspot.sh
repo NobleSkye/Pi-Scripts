@@ -28,9 +28,6 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
-# Force interactive input by redirecting from /dev/tty
-exec < /dev/tty
-
 # Confirm uninstall
 echo "⚠️  This will:"
 echo "   • Stop and disable hostapd and dnsmasq services"
@@ -41,7 +38,13 @@ echo "   • Clean up firewall rules"
 echo "   • Remove installed packages (optional)"
 echo ""
 
-read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm
+# Handle input for both interactive and piped execution
+if [ -t 0 ]; then
+    read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm
+else
+    read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm < /dev/tty
+fi
+
 if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
     echo "❌ Uninstall cancelled"
     exit 0
@@ -176,13 +179,23 @@ sudo systemctl daemon-reload
 
 echo ""
 echo "🧹 Cleanup options:"
-read -p "🗂️ Remove backup files? (y/N): " remove_backups
+if [ -t 0 ]; then
+    read -p "🗂️ Remove backup files? (y/N): " remove_backups
+else
+    read -p "🗂️ Remove backup files? (y/N): " remove_backups < /dev/tty
+fi
+
 if [[ "$remove_backups" =~ ^[Yy]$ ]]; then
     sudo rm -rf /opt/hotspot-backup
     echo "   ✅ Removed backup files"
 fi
 
-read -p "📦 Remove installed packages (hostapd, dnsmasq, flask)? (y/N): " remove_packages
+if [ -t 0 ]; then
+    read -p "📦 Remove installed packages (hostapd, dnsmasq, flask)? (y/N): " remove_packages
+else
+    read -p "📦 Remove installed packages (hostapd, dnsmasq, flask)? (y/N): " remove_packages < /dev/tty
+fi
+
 if [[ "$remove_packages" =~ ^[Yy]$ ]]; then
     echo "   🗑️ Removing packages..."
     sudo apt remove --purge -y hostapd dnsmasq 2>/dev/null || true
