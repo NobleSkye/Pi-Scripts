@@ -28,6 +28,9 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
+# Force interactive input by redirecting from /dev/tty
+exec < /dev/tty
+
 # Confirm uninstall
 echo "⚠️  This will:"
 echo "   • Stop and disable hostapd and dnsmasq services"
