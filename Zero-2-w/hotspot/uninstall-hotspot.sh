@@ -40,7 +40,7 @@ echo ""
 
 # Handle input for both interactive and piped execution
 if [ -t 0 ]; then
-    read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm
+    read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm 
 else
     read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm < /dev/tty
 fi
