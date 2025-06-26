@@ -22,11 +22,7 @@ echo "🗑️ Raspberry Pi Hotspot Uninstaller"
 echo "=================================="
 echo ""
 
-# Check if running as root or with sudo
-if [ "$EUID" -eq 0 ]; then
-    echo "⚠️  Please run this script as a regular user with sudo access, not as root"
-    exit 1
-fi
+# Script can be run as any user (will use sudo for privileged operations)
 
 # Confirm uninstall
 echo "⚠️  This will:"
@@ -38,9 +34,10 @@ echo "   • Clean up firewall rules"
 echo "   • Remove installed packages (optional)"
 echo ""
 
-# Handle input for both interactive and piped execution
+# Handle confirmation prompt for both interactive and piped execution
+confirm=""
 if [ -t 0 ]; then
-    read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm 
+    read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm
 else
     read -p "🤔 Are you sure you want to uninstall the hotspot? (y/N): " confirm < /dev/tty
 fi

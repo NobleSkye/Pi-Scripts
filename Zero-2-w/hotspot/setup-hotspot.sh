@@ -42,27 +42,37 @@ if [ -f /etc/hostapd/hostapd.conf ]; then
     echo ""
 fi
 
-# Force interactive input by redirecting from /dev/tty
-exec < /dev/tty
-
-# 🧠 Prompt for user input
+# 🧠 Prompt for user input (handle both direct and piped execution)
 if [ -z "$HOTSPOT_SSID" ]; then
-    read -p "📶 Enter Wi-Fi SSID (new network name): " ssid
+    if [ -t 0 ]; then
+        read -p "📶 Enter Wi-Fi SSID (new network name): " ssid
+    else
+        read -p "📶 Enter Wi-Fi SSID (new network name): " ssid < /dev/tty
+    fi
 else
     ssid="$HOTSPOT_SSID"
     echo "📶 Using SSID: $ssid"
 fi
 
 if [ -z "$HOTSPOT_PASSWORD" ]; then
-    read -s -p "🔑 Enter Wi-Fi password (min 8 characters): " wifi_password
-    echo
+    if [ -t 0 ]; then
+        read -s -p "🔑 Enter Wi-Fi password (min 8 characters): " wifi_password
+        echo
+    else
+        read -s -p "🔑 Enter Wi-Fi password (min 8 characters): " wifi_password < /dev/tty
+        echo
+    fi
 else
     wifi_password="$HOTSPOT_PASSWORD"
     echo "🔑 Using provided password"
 fi
 
 if [ -z "$HOTSPOT_IP" ]; then
-    read -p "🌐 Enter static IP for Pi's Wi-Fi (default: 192.168.4.1): " static_ip
+    if [ -t 0 ]; then
+        read -p "🌐 Enter static IP for Pi's Wi-Fi (default: 192.168.4.1): " static_ip
+    else
+        read -p "🌐 Enter static IP for Pi's Wi-Fi (default: 192.168.4.1): " static_ip < /dev/tty
+    fi
     static_ip=${static_ip:-192.168.4.1}
 else
     static_ip="$HOTSPOT_IP"
@@ -70,7 +80,11 @@ else
 fi
 
 if [ -z "$DHCP_START" ]; then
-    read -p "📦 Enter DHCP range start (default: 192.168.4.2): " dhcp_start
+    if [ -t 0 ]; then
+        read -p "📦 Enter DHCP range start (default: 192.168.4.2): " dhcp_start
+    else
+        read -p "📦 Enter DHCP range start (default: 192.168.4.2): " dhcp_start < /dev/tty
+    fi
     dhcp_start=${dhcp_start:-192.168.4.2}
 else
     dhcp_start="$DHCP_START"
@@ -78,7 +92,11 @@ else
 fi
 
 if [ -z "$DHCP_END" ]; then
-    read -p "📦 Enter DHCP range end (default: 192.168.4.20): " dhcp_end
+    if [ -t 0 ]; then
+        read -p "📦 Enter DHCP range end (default: 192.168.4.20): " dhcp_end
+    else
+        read -p "📦 Enter DHCP range end (default: 192.168.4.20): " dhcp_end < /dev/tty
+    fi
     dhcp_end=${dhcp_end:-192.168.4.20}
 else
     dhcp_end="$DHCP_END"
@@ -86,7 +104,11 @@ else
 fi
 
 if [ -z "$ENABLE_NAT" ]; then
-    read -p "🔁 Enable internet sharing from eth0 to Wi-Fi clients? (y/N): " enable_nat
+    if [ -t 0 ]; then
+        read -p "🔁 Enable internet sharing from eth0 to Wi-Fi clients? (y/N): " enable_nat
+    else
+        read -p "🔁 Enable internet sharing from eth0 to Wi-Fi clients? (y/N): " enable_nat < /dev/tty
+    fi
 else
     enable_nat="$ENABLE_NAT"
     echo "🔁 Internet sharing: $enable_nat"
