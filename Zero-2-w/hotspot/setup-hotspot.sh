@@ -28,6 +28,20 @@ sudo apt install -y hostapd dnsmasq dhcpcd5 iptables python3 python3-pip
 # Install Python web framework
 sudo pip3 install flask --break-system-packages
 
+# 📋 Show current configuration if it exists
+if [ -f /etc/hostapd/hostapd.conf ]; then
+    echo ""
+    echo "📋 Current Configuration Detected:"
+    current_ssid=$(grep "^ssid=" /etc/hostapd/hostapd.conf 2>/dev/null | cut -d'=' -f2 || echo "Unknown")
+    current_ip=$(grep "static ip_address=" /etc/dhcpcd.conf 2>/dev/null | cut -d'=' -f2 | cut -d'/' -f1 | xargs || echo "Unknown")
+    current_dhcp=$(grep "^dhcp-range=" /etc/dnsmasq.conf 2>/dev/null | cut -d'=' -f2 || echo "Unknown")
+    
+    echo "   📶 Current SSID: $current_ssid"
+    echo "   🌐 Current IP: $current_ip"
+    echo "   📦 Current DHCP: $current_dhcp"
+    echo ""
+fi
+
 # 🧠 Prompt for user input
 # Check if values are already set via environment variables
 if [ -z "$HOTSPOT_SSID" ]; then
@@ -79,6 +93,19 @@ fi
 echo "⏸️  Stopping services..."
 sudo systemctl stop hostapd
 sudo systemctl stop dnsmasq
+
+# 💾 Backup existing configurations
+echo "💾 Backing up existing configurations..."
+BACKUP_DIR="/opt/hotspot-backup/$(date +%Y%m%d_%H%M%S)"
+sudo mkdir -p "$BACKUP_DIR"
+
+# Backup config files if they exist
+[ -f /etc/hostapd/hostapd.conf ] && sudo cp /etc/hostapd/hostapd.conf "$BACKUP_DIR/"
+[ -f /etc/dhcpcd.conf ] && sudo cp /etc/dhcpcd.conf "$BACKUP_DIR/"
+[ -f /etc/dnsmasq.conf ] && sudo cp /etc/dnsmasq.conf "$BACKUP_DIR/"
+[ -f /etc/iptables.ipv4.nat ] && sudo cp /etc/iptables.ipv4.nat "$BACKUP_DIR/"
+
+echo "📁 Backup saved to: $BACKUP_DIR"
 
 # 📝 Generate fresh dhcpcd config
 echo "📝 Creating clean /etc/dhcpcd.conf..."
