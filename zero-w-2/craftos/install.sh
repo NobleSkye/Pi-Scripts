@@ -1,37 +1,39 @@
 #!/bin/bash
 set -e
 
-echo "=== Updating your system ==="
+echo "=== Updating the system ==="
 sudo apt update && sudo apt upgrade -y
 
-echo "=== Installing build tools and dependencies ==="
-sudo apt install -y git build-essential meson ninja-build libncurses-dev libsdl2-dev unclutter
+echo "=== Installing build tools & dependencies ==="
+sudo apt install -y git build-essential cmake libsdl2-dev libncurses-dev libpoco-dev libpng++-dev libhpdf-dev libwebp-dev sdl2-mixer-dev unclutter
 
-if [ -d "$HOME/CraftOS-PC" ]; then
-  echo "=== CraftOS-PC folder exists, pulling latest changes ==="
-  cd "$HOME/CraftOS-PC"
+if [ -d "$HOME/craftos2" ]; then
+  echo "=== craftos2 folder exists, pulling the latest changes ==="
+  cd "$HOME/craftos2"
   git pull
 else
-  echo "=== Cloning CraftOS-PC ==="
-  git clone https://github.com/MCJack123/CraftOS-PC.git "$HOME/CraftOS-PC"
-  cd "$HOME/CraftOS-PC"
+  echo "=== Cloning craftos2 repository ==="
+  git clone https://github.com/MCJack123/craftos2.git "$HOME/craftos2"
+  cd "$HOME/craftos2"
 fi
 
-echo "=== Building CraftOS-PC ==="
-rm -rf build
-meson setup build
-ninja -C build
+echo "=== Initializing submodules ==="
+git submodule update --init --recursive
 
-echo "=== Creating launch script ==="
+echo "=== Building craftos2 (CraftOS‑PC 2) ==="
+cd craftos2
+make
+
+echo "=== Setting up launcher script ==="
 cat <<EOF > "$HOME/launch-craftos.sh"
 #!/bin/bash
 unclutter &
-cd "$HOME/CraftOS-PC/build"
-./craftos --fullscreen
+cd "$HOME/craftos2/craftos2"
+./craftos
 EOF
 chmod +x "$HOME/launch-craftos.sh"
 
-echo "=== Creating autostart entry ==="
+echo "=== Adding autostart entry ==="
 mkdir -p "$HOME/.config/autostart"
 cat <<EOF > "$HOME/.config/autostart/craftos.desktop"
 [Desktop Entry]
@@ -40,7 +42,7 @@ Exec=$HOME/launch-craftos.sh
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
-Name=CraftOS-PC
+Name=CraftOS‑PC 2
 EOF
 
-echo "=== Setup complete! Reboot and CraftOS-PC will launch fullscreen on boot ==="
+echo "=== Setup finished! CraftOS‑PC 2 will auto-start on desktop login ==="
