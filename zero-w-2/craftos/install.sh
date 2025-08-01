@@ -5,7 +5,8 @@ echo "=== Updating the system ==="
 sudo apt update && sudo apt upgrade -y
 
 echo "=== Installing build tools & dependencies ==="
-sudo apt install -y git build-essential cmake libsdl2-dev libncurses-dev libpoco-dev libpng++-dev libhpdf-dev libwebp-dev sdl2-mixer-dev unclutter
+sudo apt install -y git build-essential cmake libsdl2-dev libsdl2-mixer-dev libncurses-dev libpoco-dev libpng++-dev libhpdf-dev libwebp-dev unclutter
+
 
 if [ -d "$HOME/craftos2" ]; then
   echo "=== craftos2 folder exists, pulling the latest changes ==="
